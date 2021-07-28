@@ -1,0 +1,82 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+ENV["MATCH_GIT_URL"] = "816c615dace0ae2daf667e4eb41eed05322655ca"
+ENV["FASTLANE_OUTPUT_DIRECTORY"] = "fastlane/output"
+@output_directory = ENV["FASTLANE_OUTPUT_DIRECTORY"]
+# git url of match
+@match_git_url = ENV["MATCH_GIT_URL"]
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Does a static analysis of the project. Configure the options in .swiftlint.yml"
+  lane :lint do
+    swiftlint(
+      mode: :lint,
+      executable: "Pods/SwiftLint/swiftlint",
+      reporter: "html",
+      output_file: "fastlane/swiftlint-results.html",
+      config_file: '.swiftlint.yml',
+      ignore_exit_status: true
+    )
+  end
+
+  desc "Test an measure code coverage"
+    lane :test do
+      run_tests(devices: ["iPhone 12", "iPhone 11"])
+      xcov(
+        workspace: "Pokedex.xcworkspace",
+        scheme: "Pokedex",
+        output_directory: "fastlane/xcov_output"
+      )
+  end
+  
+  desc "Upload build to hockey"
+    lane :deploy do
+      match(
+        git_url: @match_git_url,
+        type: "development",
+        app_identifier: "<your_bundle_id>",
+        readonly: true
+      )
+    # increase build number everytime when packaging a new build
+    
+    increment_build_number
+      build_app(
+        scheme: "Pokedex",
+        workspace: "Pokedex.xcworkspace",
+        clean: true,
+        output_directory: @output_directory,
+        configuration: "Debug",
+        silent: true,
+        export_method: "development",
+        export_options: {
+          signingStyle: "manual", # or manual , automatic
+          compileBitcode: true,
+          uploadBitcode: true,
+          provisioningProfiles: {
+            "com.mughieams.Pokedex" => "<name_of_provisioning_has_been_createed_by_match>"
+          }
+        },
+        sdk: "iphoneos"
+      )
+      hockey(
+        api_token: "816c615dace0ae2daf667e4eb41eed05322655ca",
+        ipa: "#{@output_directory}/Pokedex.ipa"
+      )
+    end
+end
+
