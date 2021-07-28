@@ -19,7 +19,7 @@ struct Pokemon: Decodable, Identifiable {
     let defense: Int
 }
 
-let MOCK_POKEMON: [Pokemon] = [
+let MOCKPOKEMON: [Pokemon] = [
     .init(id: 0, name: "Bulbasaur", imageUrl: "1", type: "poison", description: "Asdasd", weight: 500, height: 500, attack: 82, defense: 85),
     .init(id: 1, name: "Ivysaur", imageUrl: "1", type: "flying", description: "Qwerty", weight: 200, height: 200, attack: 100, defense: 72)
 ]

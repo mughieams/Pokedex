@@ -14,7 +14,7 @@ struct PokedexView: View {
     
     var body: some View {
         NavigationView {
-            if viewModel.pokemon.count == 0 {
+            if viewModel.pokemon.isEmpty {
                 VStack {
                     ActivityIndicator(shouldAnimate: true)
                 }
